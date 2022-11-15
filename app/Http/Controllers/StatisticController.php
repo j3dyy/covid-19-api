@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Country;
+use App\Models\CountryStatistic;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -18,8 +19,17 @@ class StatisticController extends Controller
         ]);
     }
 
+    /**
+     * @param string $country_code
+     * @return JsonResponse
+     */
     public function country(string $country_code){
-        $country = Country::with('statistics')->where('code','=', $country_code)->first();
+        $country = Country::where('code','=', $country_code)->first();
+
+        $statistics = CountryStatistic::where('country_id','=',$country->id)
+            ->orderBy('created_at','DESC')
+            ->orderBy('recovered','DESC')
+            ->paginate(10);
 
         $summaryData = [
             'deaths'=>$country->statistics()->sum('deaths'),
@@ -28,8 +38,9 @@ class StatisticController extends Controller
         ];
 
         return response()->json([
-            'data'  =>  $country,
-            'summaryData' => $summaryData
+            'country'       =>  $country,
+            'data'          =>  $statistics,
+            'summaryData'   => $summaryData
         ]);
     }
 }
