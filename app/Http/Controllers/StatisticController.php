@@ -21,8 +21,15 @@ class StatisticController extends Controller
     public function country(string $country_code){
         $country = Country::with('statistics')->where('code','=', $country_code)->first();
 
+        $summaryData = [
+            'deaths'=>$country->statistics()->sum('deaths'),
+            'recovered'=>$country->statistics()->sum('recovered'),
+            'confirmed'=>$country->statistics()->sum('confirmed')
+        ];
+
         return response()->json([
-            'data'  =>  $country
+            'data'  =>  $country,
+            'summaryData' => $summaryData
         ]);
     }
 }
